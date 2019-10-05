@@ -4,6 +4,7 @@
 #include "wifimodule.h"
 #include "thingspeak.h"
 #include "pass.h"
+#include <ESP32Servo.h>
 
 //http://tomeko.net/online_tools/cpp_text_escape.php?lang=en
 const char *webPages[] = {
@@ -24,6 +25,10 @@ const char *webPages[] = {
 "    <form action=\"/PWM2_33\" method=\"post\"> <input type=\"submit\" value=\"33%\"></form>\n"
 "    <form action=\"/PWM2_66\" method=\"post\"> <input type=\"submit\" value=\"66%\"></form>\n"
 "    <form action=\"/PWM2_100\" method=\"post\"> <input type=\"submit\" value=\"100%\"></form>\n"
+
+"    <form action=\"/Servo0\" method=\"post\"> <input type=\"submit\" value=\"Servo 0°\"></form>\n"
+"    <form action=\"/Servo90\" method=\"post\"> <input type=\"submit\" value=\"Servo 90°\"></form>\n"
+"    <form action=\"/Servo180\" method=\"post\"> <input type=\"submit\" value=\"Servo 180°\"></form>\n"
 "    <br />\n"
 "    <p>Built at: \n"
 __DATE__
@@ -68,7 +73,7 @@ void setPwm(int pwmDuty, int channel)
     ledcWrite(channel, pwmDuty);
 }
 
-void maybeServeClient(byte ch0, byte ch1)
+void maybeServeClient(byte ch0, byte ch1, Servo myServo)
 {
     bool res = false;
     WiFiClient client = httpServer.available(); // listen for incoming clients
@@ -94,6 +99,10 @@ void maybeServeClient(byte ch0, byte ch1)
                     if (currentLine.startsWith("POST /PWM2_33")) setPwm(300, ch1);
                     if (currentLine.startsWith("POST /PWM2_66")) setPwm(600, ch1);
                     if (currentLine.startsWith("POST /PWM2_100")) setPwm(1023, ch1);
+
+                    if (currentLine.startsWith("POST /Servo0")) myServo.write(0);
+                    if (currentLine.startsWith("POST /Servo90")) myServo.write(90);
+                    if (currentLine.startsWith("POST /Servo180")) myServo.write(180);
 
                     if (currentLine.startsWith("GET /reboot")) esp_restart_noos();
                     if (currentLine.startsWith("GET /bluescreen"))
